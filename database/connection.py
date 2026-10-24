@@ -1,10 +1,17 @@
-# Модуль абстракций и конфигураций базы данных приложения Planner
-# Предназначен для подключения к СУБД в последующих работах
+from sqlmodel import SQLModel, Session, create_engine
+import os
 
-class DatabaseConnection:
-    """Конфигурация подключения к базе данных"""
-    def __init__(self, connection_url: str = "sqlite:///./planner.db"):
-        self.connection_url = connection_url
+database_file = "planner.db"
+database_connection_string = f"sqlite:///{database_file}"
+connect_args = {"check_same_thread": False}
+engine_url = create_engine(database_connection_string, echo=True, connect_args=connect_args)
 
-    def connect(self):
-        return True
+def conn():
+    # Импорт моделей для автоматической регистрации таблиц в метаданных
+    from models.events import Event
+    from models.nodes import NetworkNode
+    SQLModel.metadata.create_all(engine_url)
+
+def get_session():
+    with Session(engine_url) as session:
+        yield session
